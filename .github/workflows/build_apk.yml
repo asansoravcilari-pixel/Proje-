@@ -25,17 +25,19 @@ jobs:
           flutter-version: '3.24.0'
           channel: 'stable'
 
-      - name: Proje Iskeletini Tamamla
+      - name: Proje Iskeletini Dogrudan Olustur
         run: |
-          if [ ! -d "android" ]; then
-            flutter create --platforms=android --org=com.spectre.mobile temp_proj
-            cp -r temp_proj/android ./
-            rm -rf temp_proj
-          fi
+          # Mevcut dosyalara dokunmadan eksik android klasörünü projeye uygun üretir
+          flutter create . --platforms=android --org=com.spectre.mobile
+          
+          # Android internet ve HTTP (cleartext) iznini Manifest'e ekle
+          sed -i 's/<application/<application android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
+          sed -i 's/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android">/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"><uses-permission android:name="android.permission.INTERNET"\/>/' android/app/src/main/AndroidManifest.xml
+          
           flutter pub get
 
-      - name: APK Derle (Debug - Imzasiz Calisir)
-        run: flutter build apk --debug
+      - name: APK Derle (Debug)
+        run: flutter build apk --debug --verbose
 
       - name: APK Dosyasini Yukle
         uses: actions/upload-artifact@v4
