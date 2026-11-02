@@ -25,15 +25,24 @@ jobs:
           flutter-version: '3.24.0'
           channel: 'stable'
 
-      - name: Proje Iskeletini Dogrudan Olustur
+      - name: Proje Iskeletini Temiz Kur
         run: |
-          # Proje adını kurallara uygun biçimde elle belirterek oluşturuyoruz
-          flutter create . --project-name=spectre_mobile --platforms=android --org=com.spectre.mobile
+          # Android altyapısını eksiksiz oluştur
+          flutter create . --project-name=spectre_mobile --platforms=android --org=com.spectre.mobile --overwrite
           
-          # Android HTTP ve İnternet izinlerini ekle
-          sed -i 's/<application/<application android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
-          sed -i 's/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android">/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"><uses-permission android:name="android.permission.INTERNET"\/>/' android/app/src/main/AndroidManifest.xml
-          
+          # HTTP ve Internet iznini bozmadan ekleyen Python scripti
+          python3 -c '
+          import xml.etree.ElementTree as ET
+          path = "android/app/src/main/AndroidManifest.xml"
+          with open(path, "r", encoding="utf-8") as f:
+              content = f.read()
+          if "android.permission.INTERNET" not in content:
+              content = content.replace("<application", "<uses-permission android:name=\"android.permission.INTERNET\"/>\n    <application")
+          if "usesCleartextTraffic" not in content:
+              content = content.replace("<application", "<application android:usesCleartextTraffic=\"true\"")
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(content)
+          '
           flutter pub get
 
       - name: APK Derle (Debug)
