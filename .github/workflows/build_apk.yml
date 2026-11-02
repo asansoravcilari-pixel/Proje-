@@ -27,17 +27,17 @@ jobs:
 
       - name: Proje Iskeletini Dogrudan Olustur
         run: |
-          # Mevcut dosyalara dokunmadan eksik android klasörünü projeye uygun üretir
-          flutter create . --platforms=android --org=com.spectre.mobile
+          # Proje adını kurallara uygun biçimde elle belirterek oluşturuyoruz
+          flutter create . --project-name=spectre_mobile --platforms=android --org=com.spectre.mobile
           
-          # Android internet ve HTTP (cleartext) iznini Manifest'e ekle
+          # Android HTTP ve İnternet izinlerini ekle
           sed -i 's/<application/<application android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
           sed -i 's/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android">/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"><uses-permission android:name="android.permission.INTERNET"\/>/' android/app/src/main/AndroidManifest.xml
           
           flutter pub get
 
       - name: APK Derle (Debug)
-        run: flutter build apk --debug --verbose
+        run: flutter build apk --debug
 
       - name: APK Dosyasini Yukle
         uses: actions/upload-artifact@v4
