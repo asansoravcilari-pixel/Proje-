@@ -1,0 +1,50 @@
+name: Build Spectre APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Kodlari Cek
+        uses: actions/checkout@v4
+
+      - name: Java 17 Kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Flutter Kur
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Derleme Alanini Temizle ve Hazirla
+        run: |
+          # Varsa çakışan build dosyasını/klasörünü tamamen kaldır
+          rm -rf build android ios web windows macos linux
+          
+          # Boş bir şablon oluştur
+          flutter create temp_app --project-name=spectre_mobile --platforms=android --org=com.spectre.mobile
+          
+          # Android altyapısını ve yapılandırmasını taşı
+          cp -r temp_app/android ./
+          rm -rf temp_app
+          
+          # Bağımlılıkları çek
+          flutter pub get
+
+      - name: APK Derle
+        run: flutter build apk --debug
+
+      - name: APK Dosyasini Yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Spectre-Mobile-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
