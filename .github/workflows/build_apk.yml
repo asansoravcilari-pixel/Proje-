@@ -7,10 +7,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Kodları Çek
+      - name: Kodlari Cek
         uses: actions/checkout@v4
 
       - name: Java 17 Kur
@@ -19,24 +19,26 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Flutter Kurulumu
+      - name: Flutter Kur
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.24.0'
           channel: 'stable'
-          cache: true
 
-      - name: Android Proje İskeletini Tamamla
+      - name: Proje Iskeletini Tamamla
         run: |
           if [ ! -d "android" ]; then
-            flutter create . --platforms=android --org=com.spectre.mobile
+            flutter create --platforms=android --org=com.spectre.mobile temp_proj
+            cp -r temp_proj/android ./
+            rm -rf temp_proj
           fi
-          flutter pub add http
+          flutter pub get
 
-      - name: APK Derle (Release)
-        run: flutter build apk --release
+      - name: APK Derle (Debug - Imzasiz Calisir)
+        run: flutter build apk --debug
 
-      - name: APK Dosyasını Yükle
+      - name: APK Dosyasini Yukle
         uses: actions/upload-artifact@v4
         with:
           name: Spectre-Mobile-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
